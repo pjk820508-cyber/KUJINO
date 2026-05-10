@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# PyInstaller 빌드 결과물 (EXE는 GitHub Actions에서 만들어지므로 커밋 안 함)
+build/
+dist/
+*.spec
+
+# 사용자 데이터 (커밋하지 않음 - 개인정보 포함 가능)
+kujino_data.json
+sessions/
+images/
+
+# 사운드 파일 (저작권 문제 - 직접 받아서 sounds/ 에 넣기)
+sounds/*.mp3
+sounds/*.wav
+sounds/*.ogg
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
