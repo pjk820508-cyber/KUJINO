@@ -1,0 +1,66 @@
+name: Build KUJINO EXE
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyQt5 pygame pyinstaller
+
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --name=KUJINO `
+                      --onefile `
+                      --windowed `
+                      --clean `
+                      --noconfirm `
+                      --add-data "assets;assets" `
+                      --hidden-import=pygame `
+                      kujino_app.py
+
+      - name: Package release files
+        shell: pwsh
+        run: |
+          mkdir KUJINO_release
+          copy dist\KUJINO.exe KUJINO_release\
+          xcopy assets KUJINO_release\assets\ /E /I /Y
+          if (Test-Path sounds) { xcopy sounds KUJINO_release\sounds\ /E /I /Y }
+          Compress-Archive -Path KUJINO_release\* -DestinationPath KUJINO_windows.zip
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KUJINO-windows
+          path: KUJINO_windows.zip
+          retention-days: 90
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            KUJINO_windows.zip
+            dist/KUJINO.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
